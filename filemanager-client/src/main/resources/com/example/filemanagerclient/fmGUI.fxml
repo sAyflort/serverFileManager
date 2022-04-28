@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.geometry.Insets?>
+<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.filemanagerclient.Controller">
+    <VBox fx:id="authGUI" alignment="CENTER" spacing="5">
+        <Label text="Авторизация:"/>
+        <HBox alignment="CENTER">
+            <Label text="Логин:"/>
+            <TextField fx:id="loginField"/>
+        </HBox>
+        <HBox alignment="CENTER">
+            <Label text="Пароль:"/>
+            <PasswordField fx:id="passField"/>
+        </HBox>
+        <Button text="Авторизоваться" onAction="#auth"/>
+        <Button text="Регистрация" onAction="#reg"/>
+    </VBox>
+
+    <VBox fx:id="fmGUI" visible="false" alignment="CENTER" managed="false" VBox.vgrow="ALWAYS" spacing="5">
+        <MenuBar>
+            <Menu/>
+        </MenuBar>
+
+        <HBox VBox.vgrow="ALWAYS" spacing="10">
+            <padding>
+                <Insets left="5" right="5"/>
+            </padding>
+            <fx:include fx:id="leftTable" source="panelGUI.fxml" HBox.hgrow="ALWAYS"/>
+            <fx:include fx:id="rightTable" source="panelGUI.fxml" HBox.hgrow="ALWAYS"/>
+        </HBox>
+
+        <HBox spacing="10">
+            <padding>
+                <Insets left="5" right="5" bottom="5"/>
+            </padding>
+            <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" text="Переместить"/>
+            <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" text="Копировать"/>
+            <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" text="Удалить"/>
+        </HBox>
+    </VBox>
+
+
+</VBox>
+
