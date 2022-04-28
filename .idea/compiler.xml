@@ -6,8 +6,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="serverFileManager" />
         <module name="filemanager-client" />
+        <module name="filemanager-server" />
       </profile>
     </annotationProcessing>
   </component>
