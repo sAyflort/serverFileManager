@@ -45,6 +45,12 @@
             <artifactId>netty-all</artifactId>
             <version>4.1.76.Final</version>
         </dependency>
+        <dependency>
+            <groupId>com.digitalpetri.netty</groupId>
+            <artifactId>netty-channel-fsm</artifactId>
+            <version>0.6</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 

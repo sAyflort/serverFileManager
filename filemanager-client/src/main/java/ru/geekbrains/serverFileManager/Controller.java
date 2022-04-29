@@ -1,4 +1,4 @@
-package com.example.filemanagerclient;
+package ru.geekbrains.serverFileManager;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

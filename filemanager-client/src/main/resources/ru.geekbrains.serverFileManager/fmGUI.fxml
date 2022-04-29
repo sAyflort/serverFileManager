@@ -11,7 +11,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.geometry.Insets?>
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.filemanagerclient.Controller">
+      fx:controller="ru.geekbrains.serverFileManager.Controller">
     <VBox fx:id="authGUI" alignment="CENTER" spacing="5">
         <Label text="Авторизация:"/>
         <HBox alignment="CENTER">

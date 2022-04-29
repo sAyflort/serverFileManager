@@ -1,4 +1,4 @@
-package com.example.filemanagerclient;
+package ru.geekbrains.serverFileManager;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;

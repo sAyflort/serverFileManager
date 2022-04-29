@@ -1,4 +1,4 @@
-package com.example.filemanagerclient;
+package ru.geekbrains.serverFileManager;
 
 import java.io.IOException;
 import java.nio.file.Files;

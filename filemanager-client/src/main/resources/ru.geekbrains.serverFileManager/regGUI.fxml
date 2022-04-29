@@ -8,7 +8,7 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.Button?>
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.filemanagerclient.RegController" managed="false" visible="false">
+      fx:controller="ru.geekbrains.serverFileManager.RegController" managed="false" visible="false">
     <Label text="Регистрация:"/>
     <HBox>
         <Label text="Логин:"/>

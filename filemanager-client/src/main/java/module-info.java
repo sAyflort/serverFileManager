@@ -1,8 +1,8 @@
 module com.example.filemanagerclient {
     requires javafx.controls;
     requires javafx.fxml;
+    requires io.netty.all;
 
-
-    opens com.example.filemanagerclient to javafx.fxml;
-    exports com.example.filemanagerclient;
+    opens ru.geekbrains.serverFileManager to javafx.fxml;
+    exports ru.geekbrains.serverFileManager;
 }
