@@ -10,5 +10,8 @@
         <module name="filemanager-server" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="demo" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
