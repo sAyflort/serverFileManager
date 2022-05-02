@@ -10,7 +10,7 @@ import java.io.IOException;
 public class FileManagerClient extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(FileManagerClient.class.getResource("fmGUI.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(FileManagerClient.class.getResource("/fmGUI.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 700);
         stage.setTitle("File manager");
         stage.setScene(scene);

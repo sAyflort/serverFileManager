@@ -23,6 +23,8 @@ public class PanelController implements Initializable {
     @FXML
     private TextField pathField;
 
+    private FileInfo selectedItem;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         TableColumn<FileInfo, String> fileTypeColumn = new TableColumn<>("Тип");
@@ -68,8 +70,9 @@ public class PanelController implements Initializable {
         table.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
+                selectedItem = table.getSelectionModel().getSelectedItem();
                 if(mouseEvent.getClickCount() == 2) {
-                    Path path = Paths.get(pathField.getText()).resolve(table.getSelectionModel().getSelectedItem().getFileName());
+                    Path path = Paths.get(pathField.getText()).resolve(selectedItem.getFileName());
                     if(Files.isDirectory(path)) {
                         updateTable(path);
                     }
@@ -77,7 +80,6 @@ public class PanelController implements Initializable {
             }
         });
 
-        updateTable(Paths.get("."));
     }
 
     public void updateTable(Path path) {
@@ -108,5 +110,9 @@ public class PanelController implements Initializable {
     }
     public String getCurrentPath() {
         return pathField.getText();
+    }
+
+    public FileInfo getSelectedItem() {
+        return selectedItem.getType() == FileInfo.FileType.FILE ? selectedItem : null;
     }
 }
