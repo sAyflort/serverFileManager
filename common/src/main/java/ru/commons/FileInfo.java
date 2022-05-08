@@ -1,4 +1,4 @@
-package ru.geekbrains.serverFileManager;
+package ru.commons;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -52,4 +52,10 @@ public class FileInfo implements Serializable {
         }
     }
 
+    public FileInfo(String fileName, FileType type, long size, byte[] file) {
+        this.fileName = fileName;
+        this.type = type;
+        this.size = size;
+        this.file = file;
+    }
 }

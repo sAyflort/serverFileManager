@@ -7,8 +7,21 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
+import ru.commons.FileInfo;
+import ru.commons.Request;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static ru.commons.Commands.*;
+
 
 public class NettyClient {
+    private final int MB_20 = 20 * 1_000_000;
+    private final int SHORT_MB_20 = MB_20 - 500_000;
     private SocketChannel channel;
     public NettyClient() {
         Thread t = new Thread(() -> {
@@ -20,7 +33,11 @@ public class NettyClient {
                         .handler(new ChannelInitializer<SocketChannel>() {
                             @Override
                             protected void initChannel(SocketChannel ch) throws Exception {
-                                ch.pipeline().addLast(new FileInfoToBytesEncoder());
+                                ch.pipeline().addLast(
+                                        new ObjectEncoder(),
+                                        new ObjectDecoder(MB_20, ClassResolvers.cacheDisabled(null)),
+                                        new ClientHandler()
+                                );
                             }
                         });
                 ChannelFuture future = b.connect("localhost", 8189).sync();
@@ -37,7 +54,39 @@ public class NettyClient {
         t.start();
     }
 
-    public void sendMessage(Object msg) {
-        channel.writeAndFlush(msg);
+    public void sendFile(FileInfo msg, String log, String pass) {
+        List<FileInfo> listFiles = cutFile(msg);
+        channel.writeAndFlush(new Request(SEND_FILE, log, pass, null, listFiles.get(0)));
+        if(listFiles.size() > 1) {
+            for (int i = 1; i < listFiles.size(); i++) {
+                channel.writeAndFlush(new Request(PART_FILE, log, pass, null, listFiles.get(i)));
+            }
+        }
+    }
+
+    public void sendAuth(String log, String pass) {
+        channel.writeAndFlush(new Request(AUTH , log, pass, null, null));
+
+    }
+
+    public List<FileInfo> cutFile(FileInfo fileInfo) {
+        List<FileInfo> listFiles = new ArrayList<>();
+
+        long size = fileInfo.getSize();
+        int numberCut = (int) (size/SHORT_MB_20)+1;
+        byte[] bytesFile = fileInfo.getFile();
+
+        for (int i = 0; i < numberCut; i++) {
+            byte[] bytes = new byte[i == (numberCut-1) ? (bytesFile.length-i*SHORT_MB_20) : SHORT_MB_20];
+            System.arraycopy(bytesFile, i*SHORT_MB_20, bytes, 0, bytes.length);
+            listFiles.add(new FileInfo(
+                    fileInfo.getFileName(),
+                    fileInfo.getType(),
+                    fileInfo.getSize(),
+                    bytes
+                    ));
+        }
+
+        return listFiles;
     }
 }

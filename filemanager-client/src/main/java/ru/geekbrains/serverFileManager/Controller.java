@@ -2,14 +2,10 @@ package ru.geekbrains.serverFileManager;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-
 import javafx.fxml.Initializable;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-
 import javafx.scene.layout.VBox;
-
-import javafx.stage.Stage;
 import ru.geekbrains.serverFileManager.netty.NettyClient;
 
 import java.net.URL;
@@ -29,17 +25,17 @@ public class Controller implements Initializable {
     @FXML
     private PasswordField passField;
 
-    public Stage regStage;
-    private RegController regAppController;
+    private static Controller controller;
+    private String log;
+    private String pass;
+
     private PanelController leftPController, rightPController;
     private NettyClient nettyClient;
 
     public void auth(ActionEvent actionEvent) {
-        authGUI.setVisible(false);
-        authGUI.setManaged(false);
-        fmGUI.setVisible(true);
-        fmGUI.setManaged(true);
-
+        log = loginField.getText();
+        pass = passField.getText();
+        nettyClient.sendAuth(log, pass);
     }
 
     public void reg(ActionEvent actionEvent) throws Exception {
@@ -54,12 +50,24 @@ public class Controller implements Initializable {
         rightPController = (PanelController) rightTable.getProperties().get("ctrl");
         leftPController.updateTable(Paths.get("."));
         nettyClient = new NettyClient();
+        controller = this;
     }
 
 
 
     public void move(ActionEvent actionEvent) {
         if (leftPController.getSelectedItem() == null) return;
-        nettyClient.sendMessage(leftPController.getSelectedItem());
+        nettyClient.sendFile(leftPController.getSelectedItem(), log, pass);
+    }
+
+    public void setAuthenticated() {
+        authGUI.setVisible(false);
+        authGUI.setManaged(false);
+        fmGUI.setVisible(true);
+        fmGUI.setManaged(true);
+    }
+
+    public static Controller getInstance() {
+        return controller;
     }
 }
