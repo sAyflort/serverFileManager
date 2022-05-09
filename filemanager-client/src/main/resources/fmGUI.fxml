@@ -43,9 +43,9 @@
             <padding>
                 <Insets left="5" right="5" bottom="5"/>
             </padding>
-            <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" text="Переместить" onAction="#move"/>
-            <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" text="Копировать"/>
+            <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" text="Копировать" onAction="#move"/>
             <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" text="Удалить"/>
+            <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" text="Выйти" onAction="#exit"/>
         </HBox>
     </VBox>
 

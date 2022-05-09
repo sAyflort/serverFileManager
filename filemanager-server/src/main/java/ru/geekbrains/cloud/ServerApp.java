@@ -1,6 +1,6 @@
 package ru.geekbrains.cloud;
 
-import ru.commons.Request;
+import ru.commons.SendFileRequest;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -29,7 +29,7 @@ public class ServerApp {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(
                                     new ObjectEncoder(),
-                                    new ObjectDecoder(MB_20,ClassResolvers.cacheDisabled(Request.class.getClassLoader())),
+                                    new ObjectDecoder(MB_20,ClassResolvers.cacheDisabled(SendFileRequest.class.getClassLoader())),
                                     new ServerHandler()
                             );
                         }

@@ -10,8 +10,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import ru.commons.Commands;
 import ru.commons.FileInfo;
-import ru.commons.Request;
+import ru.commons.SendFileRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,18 +55,24 @@ public class NettyClient {
         t.start();
     }
 
-    public void sendFile(FileInfo msg, String log, String pass) {
-        List<FileInfo> listFiles = cutFile(msg);
-        channel.writeAndFlush(new Request(SEND_FILE, log, pass, null, listFiles.get(0)));
-        if(listFiles.size() > 1) {
-            for (int i = 1; i < listFiles.size(); i++) {
-                channel.writeAndFlush(new Request(PART_FILE, log, pass, null, listFiles.get(i)));
+    public void sendFile(FileInfo msg, String log, String pass, Commands command) {
+        if (command == SEND_FILE) {
+            List<FileInfo> listFiles = cutFile(msg);
+            channel.writeAndFlush(new SendFileRequest(SEND_FILE, log, pass, null, listFiles.get(0)));
+            if(listFiles.size() > 1) {
+                for (int i = 1; i < listFiles.size(); i++) {
+                    channel.writeAndFlush(new SendFileRequest(PART_FILE, log, pass, null, listFiles.get(i)));
+                }
             }
         }
+        if(command == GET_FILE) {
+            channel.writeAndFlush(new SendFileRequest(GET_FILE, log, pass, null , msg));
+        }
+
     }
 
     public void sendAuth(String log, String pass) {
-        channel.writeAndFlush(new Request(AUTH , log, pass, null, null));
+        channel.writeAndFlush(new SendFileRequest(AUTH , log, pass, null, null));
 
     }
 

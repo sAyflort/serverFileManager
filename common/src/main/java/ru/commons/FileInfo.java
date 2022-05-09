@@ -1,5 +1,6 @@
 package ru.commons;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -24,6 +25,7 @@ public class FileInfo implements Serializable {
     private FileType type;
     private long size;
     private byte[] file;
+    private String filePath;
 
     public String getFileName() {
         return fileName;
@@ -37,6 +39,10 @@ public class FileInfo implements Serializable {
         return size;
     }
 
+    public String getFilePath() {
+        return filePath;
+    }
+
     public byte[] getFile() {
         return file;
     }
@@ -47,6 +53,7 @@ public class FileInfo implements Serializable {
             this.type = Files.isDirectory(path) ? FileType.DIRECTORY : FileType.FILE;
             this.file = type == FileType.FILE ? Files.readAllBytes(path) : null;
             this.size = type == FileType.DIRECTORY ? -1l : Files.size(path);
+            this.filePath = path.toAbsolutePath().toString();
         } catch (IOException e) {
             throw new RuntimeException("Unable to create file info from path");
         }
@@ -57,5 +64,12 @@ public class FileInfo implements Serializable {
         this.type = type;
         this.size = size;
         this.file = file;
+    }
+
+    public FileInfo(File file) {
+        this.fileName = file.getName();
+        this.type = file.isDirectory() ? FileType.DIRECTORY : FileType.FILE;
+        this.size = type == FileType.DIRECTORY ? -1l : file.length();
+        this.filePath = file.getAbsolutePath();
     }
 }

@@ -10,12 +10,14 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import ru.commons.FileInfo;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,7 @@ public class PanelController implements Initializable {
     private TextField pathField;
 
     private FileInfo selectedItem;
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -75,6 +78,9 @@ public class PanelController implements Initializable {
             @Override
             public void handle(MouseEvent mouseEvent) {
                 selectedItem = table.getSelectionModel().getSelectedItem();
+                if(mouseEvent.getClickCount() >= 1) {
+                    Controller.setLastClickedTable(PanelController.this);
+                }
                 if(mouseEvent.getClickCount() == 2) {
                     Path path = Paths.get(pathField.getText()).resolve(selectedItem.getFileName());
                     if(Files.isDirectory(path)) {
@@ -93,12 +99,19 @@ public class PanelController implements Initializable {
             table.getItems().addAll(Files.list(path).map(FileInfo::new).collect(Collectors.toList()));
             table.sort();
 
+
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.WARNING,
                     "Нет доступа или не удалось получить файлы из данного пути", ButtonType.OK);
             alert.showAndWait();
         }
 
+    }
+
+    public void updateTable(List<File> fileList) {
+        table.getItems().clear();
+        table.getItems().addAll(fileList.stream().map(FileInfo::new).collect(Collectors.toList()));
+        table.sort();
     }
 
     public void selectDiskAction(ActionEvent actionEvent) {

@@ -5,6 +5,7 @@ import java.sql.*;
 public class BaseAuthService implements AuthService{
     private Connection connection;
     private PreparedStatement prSelectAuth;
+    private PreparedStatement prAddAcc;
 
     public BaseAuthService() {
         try {
@@ -16,6 +17,8 @@ public class BaseAuthService implements AuthService{
 
     private void prepareAllStatements() throws SQLException {
         prSelectAuth = connection.prepareStatement("SELECT id FROM main.accounts where login=? and password=?");
+        prAddAcc = connection.prepareStatement("INSERT INTO main.accounts (login, password) VALUES (?, ?)");
+
     }
 
     private void connect() {

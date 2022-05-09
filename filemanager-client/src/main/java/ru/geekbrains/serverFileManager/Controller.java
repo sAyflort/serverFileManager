@@ -12,6 +12,8 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
+import static ru.commons.Commands.*;
+
 
 public class Controller implements Initializable {
     @FXML
@@ -26,8 +28,10 @@ public class Controller implements Initializable {
     private PasswordField passField;
 
     private static Controller controller;
+    private static PanelController lastClickedTable;
     private String log;
     private String pass;
+    private boolean authenticated;
 
     private PanelController leftPController, rightPController;
     private NettyClient nettyClient;
@@ -56,18 +60,50 @@ public class Controller implements Initializable {
 
 
     public void move(ActionEvent actionEvent) {
-        if (leftPController.getSelectedItem() == null) return;
-        nettyClient.sendFile(leftPController.getSelectedItem(), log, pass);
+        if (lastClickedTable.getSelectedItem() == null) {
+            return;
+        } else {
+            if (lastClickedTable == leftPController) {
+                nettyClient.sendFile(lastClickedTable.getSelectedItem(), log, pass, SEND_FILE);
+            }
+            if (lastClickedTable == rightPController) {
+                nettyClient.sendFile(lastClickedTable.getSelectedItem(), log, pass, GET_FILE);
+                System.out.println("Отправка в NettyClient");
+            }
+        }
+
+
     }
 
     public void setAuthenticated() {
-        authGUI.setVisible(false);
-        authGUI.setManaged(false);
-        fmGUI.setVisible(true);
-        fmGUI.setManaged(true);
+        authenticated = !authenticated;
+        authGUI.setVisible(!authenticated);
+        authGUI.setManaged(!authenticated);
+        fmGUI.setVisible(authenticated);
+        fmGUI.setManaged(authenticated);
     }
 
     public static Controller getInstance() {
         return controller;
+    }
+
+    public PanelController getRightPController() {
+        return rightPController;
+    }
+
+    public void exit(ActionEvent actionEvent) {
+        setAuthenticated();
+    }
+
+    public static void setLastClickedTable(PanelController lastClickedTable) {
+        Controller.lastClickedTable = lastClickedTable;
+    }
+
+    public String getCurrentPath() {
+        return leftPController.getCurrentPath();
+    }
+
+    public void updateLeftTable() {
+        leftPController.updateTable(Paths.get(leftPController.getCurrentPath()));
     }
 }
