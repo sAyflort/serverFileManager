@@ -21,6 +21,16 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import static ru.commons.Commands.GET_FILE_LIST;
+import static ru.geekbrains.serverFileManager.PanelController.TYPE.*;
+
+
+// 1) Нужно создать отдельный класс PanelController, от которого будут наследоваться ServerPanelController и ClientPanelController,
+//так как выходит слишком много логики на данный класс, который использует только половину методов в зависимости от того, где он расположен в интерфейсе
+// 2) Создать логику поиска файла в текущей директории и внутренних директориях:
+//-При нажатии на кнопку "поиск" заблокировать переходы по директориям
+//-Чтобы вернуться в режим "проводника" нужно будет нажать на кнопку "Вверх", которая в режиме поиска будет менять текст на "Вернуться"
+
 public class PanelController implements Initializable {
     @FXML
     private TableView<FileInfo> table;
@@ -28,9 +38,25 @@ public class PanelController implements Initializable {
     private ComboBox disksBox;
     @FXML
     private TextField pathField;
+    @FXML
+    private TextField searchField;
 
     private FileInfo selectedItem;
+    private TYPE type = CLIENT;
+    private Controller primeCtrl;
 
+    public void setPrimeCtrl(Controller primeCtrl) {
+        this.primeCtrl = primeCtrl;
+    }
+
+    public void search(ActionEvent actionEvent) {
+
+    }
+
+    enum TYPE {
+        SERVER,
+        CLIENT
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -89,7 +115,6 @@ public class PanelController implements Initializable {
                 }
             }
         });
-
     }
 
     public void updateTable(Path path) {
@@ -98,8 +123,6 @@ public class PanelController implements Initializable {
             table.getItems().clear();
             table.getItems().addAll(Files.list(path).map(FileInfo::new).collect(Collectors.toList()));
             table.sort();
-
-
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.WARNING,
                     "Нет доступа или не удалось получить файлы из данного пути", ButtonType.OK);
@@ -108,10 +131,12 @@ public class PanelController implements Initializable {
 
     }
 
-    public void updateTable(List<File> fileList) {
+    public void updateTable(List<File> fileList, String path) {
+        pathField.setText(path);
         table.getItems().clear();
         table.getItems().addAll(fileList.stream().map(FileInfo::new).collect(Collectors.toList()));
         table.sort();
+
     }
 
     public void selectDiskAction(ActionEvent actionEvent) {
@@ -120,10 +145,15 @@ public class PanelController implements Initializable {
     }
 
     public void upperPath(ActionEvent actionEvent) {
-        Path upPath = Paths.get(pathField.getText()).getParent();
-        if (upPath != null) {
-            updateTable(upPath);
+        if (type == CLIENT) {
+            Path upPath = Paths.get(pathField.getText()).getParent();
+            if (upPath != null) {
+                updateTable(upPath);
+            }
+        } else {
+            primeCtrl.sendMsg(GET_FILE_LIST, Paths.get(pathField.getText()).getParent().toString(), null);
         }
+
     }
     public String getCurrentPath() {
         return pathField.getText();
@@ -132,4 +162,23 @@ public class PanelController implements Initializable {
     public FileInfo getSelectedItem() {
         return selectedItem.getType() == FileInfo.FileType.FILE ? selectedItem : null;
     }
+
+    public void setTypeServerPanel() {
+        type = SERVER;
+        table.setOnMouseClicked(mouseEvent -> {
+            selectedItem = table.getSelectionModel().getSelectedItem();
+            if(mouseEvent.getClickCount() >= 1) {
+                Controller.setLastClickedTable(PanelController.this);
+            }
+            if(mouseEvent.getClickCount() == 2) {
+                Path path = Paths.get(pathField.getText()).resolve(selectedItem.getFileName());
+                if(Files.isDirectory(path)) {
+                    primeCtrl.sendMsg(GET_FILE_LIST,
+                            path.toString(), null);
+                }
+
+            }
+        });
+    }
+
 }

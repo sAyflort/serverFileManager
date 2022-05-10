@@ -17,8 +17,12 @@ import java.util.List;
 
 import static ru.commons.Commands.*;
 
+//Добавить логи
 public class ServerHandler extends ChannelInboundHandlerAdapter {
     private final String basePath  = "C:\\Users\\sAyflort\\IdeaProjects\\serverFileManager\\cloud\\";
+    private String basePathClient;
+    private String currentPath;
+    private String[] basePaths;
     private BaseAuthService baseAuthService;
     private final static int SHORT_MB_20 = 20 * 1_000_000 - 500_000;
 
@@ -35,14 +39,32 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
             System.out.println(sendFileRequest.getType());
 
+            //Убрать ад из if, заменить на switch-case или работать через новый класс FileServiceManager
             if(baseAuthService.isAuth(sendFileRequest.getLogin(), sendFileRequest.getPass())) {
                 if(sendFileRequest.getType() == AUTH) {
                     ctx.channel().writeAndFlush(AUTH_OK);
-                    ctx.channel().writeAndFlush(new FilesListRequest(basePath+sendFileRequest.getLogin()));
+                    basePathClient = basePath + sendFileRequest.getLogin();
+                    currentPath = basePathClient;
+                    basePaths = basePathClient.split("\\\\");
+                    ctx.channel().writeAndFlush(new FilesListRequest(basePathClient));
                     return;
                 }
+                if(sendFileRequest.getType() == DELETE_FILE) {
+                    String[] delPath = sendFileRequest.getDirectPath().split("\\\\");
+                    try {
+                        for (int i = 0; i < basePaths.length; i++) {
+                            if (!delPath[i].equals(basePaths[i])) {
+                                return;
+                            }
+                        }
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        return;
+                    }
+                    Files.deleteIfExists(Paths.get(sendFileRequest.getDirectPath()));
+                }
                 if(sendFileRequest.getType() == SEND_FILE) {
-                    String path = basePath+ sendFileRequest.getLogin();
+                    String path;
+                    path = currentPath;
                     Files.createDirectories(Path.of(path));
                     path += "\\"+ sendFileRequest.getFileInfo().getFileName();
 
@@ -52,23 +74,37 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
                             sendFileRequest.getFileInfo().getFile(), StandardOpenOption.APPEND);
                 }
                 if(sendFileRequest.getType() == PART_FILE) {
-                    String path = basePath+ sendFileRequest.getLogin()+"\\"+ sendFileRequest.getFileInfo().getFileName();
+                    String path = currentPath+"\\"+ sendFileRequest.getFileInfo().getFileName();
                     Files.write(Path.of(path),
                             sendFileRequest.getFileInfo().getFile(), StandardOpenOption.APPEND);
                 }
                 if(sendFileRequest.getType() == GET_FILE) {
-                    System.out.println("Запрос получен");
                     String[] cutPath = sendFileRequest.getFileInfo().getFilePath().split("\\\\");
-                    if(cutPath[6].equals(sendFileRequest.getLogin()) &&
-                            (sendFileRequest.getFileInfo().getFilePath().split("\\\\"+sendFileRequest.getLogin())[0]+"\\").equals(basePath)) {
-                        /*ctx.channel().writeAndFlush(new SendFileRequest(SEND_FILE, null, null, null,
-                                new FileInfo(Paths.get(sendFileRequest.getFileInfo().getFilePath()))));*/
-                        sendFile(new FileInfo(Paths.get(sendFileRequest.getFileInfo().getFilePath())), SEND_FILE, ctx);
-                    } else {
+                    try {
+                        for (int i = 0; i < basePaths.length; i++) {
+                            if (!cutPath[i].equals(basePaths[i])) {
+                                return;
+                            }
+                        }
+                    } catch (ArrayIndexOutOfBoundsException e) {
                         return;
                     }
+                    sendFile(new FileInfo(Paths.get(sendFileRequest.getFileInfo().getFilePath())), SEND_FILE, ctx);
                 }
-                ctx.channel().writeAndFlush(new FilesListRequest(basePath+sendFileRequest.getLogin()));
+                if(sendFileRequest.getType() == GET_FILE_LIST) {
+                    String[] checkPath = sendFileRequest.getDirectPath().split("\\\\");
+                    try {
+                        for (int i = 0; i < basePaths.length; i++) {
+                            if (!checkPath[i].equals(basePaths[i])) {
+                                return;
+                            }
+                        }
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        return;
+                    }
+                    currentPath = sendFileRequest.getDirectPath();
+                }
+                ctx.channel().writeAndFlush(new FilesListRequest(currentPath));
             } else {
                 return;
             }

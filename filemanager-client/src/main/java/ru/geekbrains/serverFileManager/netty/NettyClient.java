@@ -71,8 +71,8 @@ public class NettyClient {
 
     }
 
-    public void sendAuth(String log, String pass) {
-        channel.writeAndFlush(new SendFileRequest(AUTH , log, pass, null, null));
+    public void sendMsg(Commands commands, String log, String pass, String path, FileInfo fileInfo) {
+        channel.writeAndFlush(new SendFileRequest(commands , log, pass, path, fileInfo));
 
     }
 

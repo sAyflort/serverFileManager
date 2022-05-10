@@ -14,10 +14,12 @@ import java.nio.file.StandardOpenOption;
 
 import static ru.commons.Commands.*;
 
+//Добавить логи
 public class ClientHandler extends ChannelInboundHandlerAdapter {
     private Controller controller;
     private PanelController panelController;
     private String currentPath;
+
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -26,6 +28,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         this.panelController = this.controller.getRightPController();
     }
 
+    //Убрать ад из if, заменить на switch-case или работать через класс новый класс FileServiceManager
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         currentPath = controller.getCurrentPath();
@@ -37,7 +40,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         }
         if (msg instanceof FilesListRequest) {
             FilesListRequest filesListRequest = (FilesListRequest) msg;
-            panelController.updateTable(filesListRequest.getFileList());
+            panelController.updateTable(filesListRequest.getFileList(), filesListRequest.getPath());
         }
         if (msg instanceof SendFileRequest) {
             SendFileRequest request = (SendFileRequest) msg;

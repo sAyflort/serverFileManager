@@ -6,9 +6,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import ru.commons.Commands;
+import ru.commons.FileInfo;
 import ru.geekbrains.serverFileManager.netty.NettyClient;
 
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
@@ -27,8 +31,8 @@ public class Controller implements Initializable {
     @FXML
     private PasswordField passField;
 
-    private static Controller controller;
     private static PanelController lastClickedTable;
+    private static Controller controller;
     private String log;
     private String pass;
     private boolean authenticated;
@@ -39,7 +43,7 @@ public class Controller implements Initializable {
     public void auth(ActionEvent actionEvent) {
         log = loginField.getText();
         pass = passField.getText();
-        nettyClient.sendAuth(log, pass);
+        sendMsg(AUTH, null, null);
     }
 
     public void reg(ActionEvent actionEvent) throws Exception {
@@ -52,9 +56,11 @@ public class Controller implements Initializable {
         rightTable.prefWidthProperty().bind(rightTable.widthProperty().multiply(0.5));
         leftPController = (PanelController) leftTable.getProperties().get("ctrl");
         rightPController = (PanelController) rightTable.getProperties().get("ctrl");
-        leftPController.updateTable(Paths.get("."));
+        leftPController.updateTable(Paths.get("C:\\Users\\sAyflort\\IdeaProjects\\serverFileManager\\local"));
         nettyClient = new NettyClient();
         controller = this;
+        rightPController.setPrimeCtrl(this);
+        rightPController.setTypeServerPanel();
     }
 
 
@@ -83,10 +89,6 @@ public class Controller implements Initializable {
         fmGUI.setManaged(authenticated);
     }
 
-    public static Controller getInstance() {
-        return controller;
-    }
-
     public PanelController getRightPController() {
         return rightPController;
     }
@@ -105,5 +107,26 @@ public class Controller implements Initializable {
 
     public void updateLeftTable() {
         leftPController.updateTable(Paths.get(leftPController.getCurrentPath()));
+    }
+
+    public void sendMsg(Commands command, String path, FileInfo msg) {
+        nettyClient.sendMsg(command, log, pass, path, msg);
+    }
+
+    public static Controller getInstance() {
+        return controller;
+    }
+
+    public void delete(ActionEvent actionEvent) {
+        if (lastClickedTable == leftPController) {
+            try {
+                Files.deleteIfExists(Paths.get(lastClickedTable.getSelectedItem().getFilePath()));
+                lastClickedTable.updateTable(Paths.get(lastClickedTable.getCurrentPath()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if (lastClickedTable == rightPController) {
+            sendMsg(DELETE_FILE, lastClickedTable.getSelectedItem().getFilePath(), null);
+        }
     }
 }

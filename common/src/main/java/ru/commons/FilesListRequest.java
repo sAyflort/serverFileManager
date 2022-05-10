@@ -10,9 +10,11 @@ import java.util.stream.Collectors;
 
 public class FilesListRequest implements Request{
     private List<File> fileList;
+    private String path;
 
     public FilesListRequest(String path) {
         Path serverPath = Paths.get(path);
+        this.path = path;
         try {
             List<File> pathList = Files.list(serverPath)
                     .map(Path::toFile)
@@ -25,5 +27,9 @@ public class FilesListRequest implements Request{
 
     public List<File> getFileList() {
         return fileList;
+    }
+
+    public String getPath() {
+        return path;
     }
 }
