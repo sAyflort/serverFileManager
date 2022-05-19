@@ -1,5 +1,7 @@
 package ru.geekbrains.cloud;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.commons.SendFileRequest;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -17,7 +19,10 @@ public class ServerApp {
     private static BaseAuthService baseAuthService = new BaseAuthService();
     private static final int MB_20 = 20 * 1_000_000;
 
+    private static final Logger LOGGER = LogManager.getLogger(ServerApp.class);
+
     public static void main(String[] args) {
+        LOGGER.info("Запуск сервера");
         EventLoopGroup bossGroup = new NioEventLoopGroup(4);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -38,10 +43,11 @@ public class ServerApp {
             ChannelFuture future = b.bind(8189).sync();
             future.channel().closeFuture().sync();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.warn(e.getMessage());
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
+            LOGGER.info("Завершение работы");
         }
     }
 

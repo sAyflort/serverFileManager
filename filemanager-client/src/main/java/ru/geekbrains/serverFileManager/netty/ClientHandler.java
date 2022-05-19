@@ -6,18 +6,15 @@ import ru.commons.Commands;
 import ru.commons.FilesListRequest;
 import ru.commons.SendFileRequest;
 import ru.geekbrains.serverFileManager.Controller;
-import ru.geekbrains.serverFileManager.PanelController;
+import ru.geekbrains.serverFileManager.ServerPanelCtrl;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import static ru.commons.Commands.*;
-
-//Добавить логи
 public class ClientHandler extends ChannelInboundHandlerAdapter {
     private Controller controller;
-    private PanelController panelController;
+    private ServerPanelCtrl panelController;
     private String currentPath;
 
 
@@ -28,14 +25,24 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         this.panelController = this.controller.getRightPController();
     }
 
-    //Убрать ад из if, заменить на switch-case или работать через класс новый класс FileServiceManager
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         currentPath = controller.getCurrentPath();
         if (msg instanceof Commands) {
-            Commands commands = (Commands) msg;
-            if(commands.equals(AUTH_OK)) {
-                controller.setAuthenticated();
+            Commands command = (Commands) msg;
+            switch (command) {
+                case AUTH_OK -> {
+                    controller.setAuthenticated();
+                }
+                case AUTH_BAD -> {
+                    controller.appendAuthText("Неверный логин/пароль\n");
+                }
+                case REG_OK -> {
+                    controller.appendRegText("Регистрация прошла успешно\n");
+                }
+                case REG_BAD -> {
+                    controller.appendRegText("Такой пользователь уже существует\n");
+                }
             }
         }
         if (msg instanceof FilesListRequest) {
@@ -44,20 +51,23 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         }
         if (msg instanceof SendFileRequest) {
             SendFileRequest request = (SendFileRequest) msg;
-            if (request.getType() == SEND_FILE) {
-                currentPath += "\\"+ request.getFileInfo().getFileName();
-                Files.deleteIfExists(Path.of(currentPath));
-                Files.createFile(Path.of(currentPath));
-                Files.write(Path.of(currentPath),
-                        request.getFileInfo().getFile(), StandardOpenOption.APPEND);
-            }
-            if (request.getType() == PART_FILE) {
-                currentPath += "\\"+ request.getFileInfo().getFileName();
-                Files.write(Path.of(currentPath),
-                        request.getFileInfo().getFile(), StandardOpenOption.APPEND);
+            switch (request.getType()) {
+                case SEND_FILE -> {
+                    currentPath += "\\"+ request.getFileInfo().getFileName();
+                    Files.deleteIfExists(Path.of(currentPath));
+                    Files.createFile(Path.of(currentPath));
+                    Files.write(Path.of(currentPath),
+                            request.getFileInfo().getFile(), StandardOpenOption.APPEND);
+                    controller.updateLeftTable();
+                }
+                case PART_FILE -> {
+                    currentPath += "\\"+ request.getFileInfo().getFileName();
+                    Files.write(Path.of(currentPath),
+                            request.getFileInfo().getFile(), StandardOpenOption.APPEND);
+                    controller.updateLeftTable();
+                }
             }
         }
-        controller.updateLeftTable();
     }
 
     @Override

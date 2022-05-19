@@ -10,6 +10,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.commons.Commands;
 import ru.commons.FileInfo;
 import ru.commons.SendFileRequest;
@@ -24,6 +26,8 @@ public class NettyClient {
     private final int MB_20 = 20 * 1_000_000;
     private final int SHORT_MB_20 = MB_20 - 500_000;
     private SocketChannel channel;
+
+    private static final Logger LOGGER = LogManager.getLogger(NettyClient.class);
     public NettyClient() {
         Thread t = new Thread(() -> {
             EventLoopGroup workGroup = new NioEventLoopGroup();
@@ -45,7 +49,7 @@ public class NettyClient {
                 this.channel = (SocketChannel) future.channel();
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
-
+                LOGGER.warn(e.getMessage());
             } finally {
                 workGroup.shutdownGracefully();
             }
@@ -56,6 +60,7 @@ public class NettyClient {
     }
 
     public void sendFile(FileInfo msg, String log, String pass, Commands command) {
+        LOGGER.info(command);
         if (command == SEND_FILE) {
             List<FileInfo> listFiles = cutFile(msg);
             channel.writeAndFlush(new SendFileRequest(SEND_FILE, log, pass, null, listFiles.get(0)));
@@ -72,6 +77,7 @@ public class NettyClient {
     }
 
     public void sendMsg(Commands commands, String log, String pass, String path, FileInfo fileInfo) {
+        LOGGER.info("Отправлен запрос: "+commands);
         channel.writeAndFlush(new SendFileRequest(commands , log, pass, path, fileInfo));
 
     }

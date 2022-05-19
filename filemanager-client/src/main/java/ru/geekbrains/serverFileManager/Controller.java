@@ -2,10 +2,14 @@ package ru.geekbrains.serverFileManager;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.commons.Commands;
 import ru.commons.FileInfo;
 import ru.geekbrains.serverFileManager.netty.NettyClient;
@@ -14,6 +18,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import static ru.commons.Commands.*;
@@ -21,7 +26,7 @@ import static ru.commons.Commands.*;
 
 public class Controller implements Initializable {
     @FXML
-    VBox leftTable, rightTable;
+    private VBox leftTable, rightTable;
     @FXML
     private VBox authGUI;
     @FXML
@@ -30,37 +35,54 @@ public class Controller implements Initializable {
     private TextField loginField;
     @FXML
     private PasswordField passField;
+    @FXML
+    private TextArea msgArea;
 
     private static PanelController lastClickedTable;
     private static Controller controller;
+    private RegController regCtrl;
     private String log;
     private String pass;
+    private final String basePath = "C:\\Users\\sAyflort\\IdeaProjects\\serverFileManager";
     private boolean authenticated;
 
-    private PanelController leftPController, rightPController;
+    private ClientPanelCtrl leftPController;
+    private ServerPanelCtrl rightPController;
     private NettyClient nettyClient;
 
+    private static final Logger LOGGER = LogManager.getLogger(Controller.class);
+
     public void auth(ActionEvent actionEvent) {
-        log = loginField.getText();
-        pass = passField.getText();
+        setAcc(loginField.getText(), passField.getText());
         sendMsg(AUTH, null, null);
     }
 
-    public void reg(ActionEvent actionEvent) throws Exception {
+    public void setAcc(String log, String pass) {
+        this.log = log;
+        this.pass = pass;
+    }
 
+    public void reg(ActionEvent actionEvent) throws Exception {
+        FXMLLoader fxmlLoader = new FXMLLoader(FileManagerClient.class.getResource("/regGUI.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 500, 350);
+        Stage stage = new Stage();
+        stage.setTitle("Reg");
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
+        regCtrl = fxmlLoader.getController();
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         leftTable.prefWidthProperty().bind(leftTable.widthProperty().multiply(0.5));
         rightTable.prefWidthProperty().bind(rightTable.widthProperty().multiply(0.5));
-        leftPController = (PanelController) leftTable.getProperties().get("ctrl");
-        rightPController = (PanelController) rightTable.getProperties().get("ctrl");
-        leftPController.updateTable(Paths.get("C:\\Users\\sAyflort\\IdeaProjects\\serverFileManager\\local"));
+        leftPController = (ClientPanelCtrl) leftTable.getProperties().get("ctrl");
+        rightPController = (ServerPanelCtrl) rightTable.getProperties().get("ctrl");
+        leftPController.updateTable(Paths.get(basePath));
         nettyClient = new NettyClient();
         controller = this;
         rightPController.setPrimeCtrl(this);
-        rightPController.setTypeServerPanel();
     }
 
 
@@ -69,16 +91,16 @@ public class Controller implements Initializable {
         if (lastClickedTable.getSelectedItem() == null) {
             return;
         } else {
+            if(lastClickedTable.getSelectedItem().getType() == FileInfo.FileType.DIRECTORY ) {
+                return;
+            }
             if (lastClickedTable == leftPController) {
                 nettyClient.sendFile(lastClickedTable.getSelectedItem(), log, pass, SEND_FILE);
             }
             if (lastClickedTable == rightPController) {
                 nettyClient.sendFile(lastClickedTable.getSelectedItem(), log, pass, GET_FILE);
-                System.out.println("Отправка в NettyClient");
             }
         }
-
-
     }
 
     public void setAuthenticated() {
@@ -89,7 +111,7 @@ public class Controller implements Initializable {
         fmGUI.setManaged(authenticated);
     }
 
-    public PanelController getRightPController() {
+    public ServerPanelCtrl getRightPController() {
         return rightPController;
     }
 
@@ -118,15 +140,48 @@ public class Controller implements Initializable {
     }
 
     public void delete(ActionEvent actionEvent) {
+        if (!confDelete(lastClickedTable.getSelectedItem().getFilePath())) {
+            return;
+        }
         if (lastClickedTable == leftPController) {
             try {
                 Files.deleteIfExists(Paths.get(lastClickedTable.getSelectedItem().getFilePath()));
                 lastClickedTable.updateTable(Paths.get(lastClickedTable.getCurrentPath()));
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.warn(e.getMessage());
             }
         } else if (lastClickedTable == rightPController) {
             sendMsg(DELETE_FILE, lastClickedTable.getSelectedItem().getFilePath(), null);
         }
+    }
+
+    private boolean confDelete(String path) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete File");
+        alert.setHeaderText("Удалить файл "+path.split("\\\\")[path.split("\\\\").length-1]+"?");
+        alert.setContentText(path);
+        Optional<ButtonType> option = alert.showAndWait();
+        if (option.get() == ButtonType.OK) {
+            return true;
+        } else if (option.get() == ButtonType.CANCEL) {
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    public void setFocusPass(ActionEvent actionEvent) {
+        passField.requestFocus();
+    }
+
+    public void createDirectory(ActionEvent actionEvent) {
+        lastClickedTable.createDirectory();
+    }
+
+    public void appendAuthText(String msg) {
+        msgArea.appendText(msg);
+    }
+    public void appendRegText(String msg) {
+        regCtrl.appendRegText(msg);
     }
 }

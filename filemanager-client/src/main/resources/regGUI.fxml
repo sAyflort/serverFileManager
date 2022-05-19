@@ -7,21 +7,26 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.geekbrains.serverFileManager.RegController" managed="false" visible="false">
+      fx:controller="ru.geekbrains.serverFileManager.RegController">
     <Label text="Регистрация:"/>
-    <HBox>
+    <HBox spacing="5.0" alignment="CENTER">
         <Label text="Логин:"/>
-        <TextField/>
+        <TextField fx:id="loginField" onAction="#setFocusPass1"/>
     </HBox>
-    <HBox>
+    <HBox spacing="5.0" alignment="CENTER">
         <Label text="Пароль:"/>
-        <PasswordField/>
+        <PasswordField fx:id="pass1Field" onAction="#setFocusPass2"/>
     </HBox>
-    <HBox>
+    <HBox spacing="5.0" alignment="CENTER">
         <Label text="Пароль:"/>
-        <PasswordField/>
+        <PasswordField fx:id="pass2Field" onAction="#reg"/>
     </HBox>
-    <Button text="Зарегистрировать"/>
+    <HBox spacing="5.0" alignment="CENTER">
+        <Button text="Зарегистрировать" onAction="#reg"/>
+        <Button text="Вернуться" onAction="#close"/>
+    </HBox>
+    <TextArea fx:id="msgArea" editable="false"/>
 </VBox>
 

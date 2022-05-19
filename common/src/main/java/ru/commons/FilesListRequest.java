@@ -25,6 +25,10 @@ public class FilesListRequest implements Request{
         }
     }
 
+    public FilesListRequest(List<File> fileList) {
+        this.fileList = fileList;
+    }
+
     public List<File> getFileList() {
         return fileList;
     }
