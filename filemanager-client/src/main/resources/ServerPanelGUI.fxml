@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox  alignment="CENTER" spacing="5" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ru.geekbrains.serverFileManager.ServerPanelCtrl">
+    <HBox>
+        <ComboBox fx:id="disksBox"/>
+        <TextField fx:id="pathField" HBox.hgrow="ALWAYS" editable="false"/>
+        <Button fx:id="upButton" text="Вверх" onAction="#upperPath"/>
+    </HBox>
+    <HBox>
+        <TextField HBox.hgrow="ALWAYS" fx:id="searchField" onAction="#search"/>
+        <Button text="Поиск" onAction="#search"/>
+    </HBox>
+    <TableView fx:id="table" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS"/>
+    <properties>
+        <ctrl><fx:reference source="controller"/></ctrl>
+    </properties>
+
+</VBox>
