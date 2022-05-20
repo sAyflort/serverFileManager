@@ -144,7 +144,7 @@ public class ServerPanelCtrl implements PanelController {
     @Override
     public void createDirectory() {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("New folder");
+        dialog.setTitle("New folder in cloud");
         dialog.setHeaderText(null);
         dialog.setContentText("Name:");
         Optional<String> result = dialog.showAndWait();

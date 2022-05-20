@@ -85,8 +85,6 @@ public class Controller implements Initializable {
         rightPController.setPrimeCtrl(this);
     }
 
-
-
     public void move(ActionEvent actionEvent) {
         if (lastClickedTable.getSelectedItem() == null) {
             return;
@@ -140,25 +138,34 @@ public class Controller implements Initializable {
     }
 
     public void delete(ActionEvent actionEvent) {
-        if (!confDelete(lastClickedTable.getSelectedItem().getFilePath())) {
-            return;
-        }
-        if (lastClickedTable == leftPController) {
-            try {
-                Files.deleteIfExists(Paths.get(lastClickedTable.getSelectedItem().getFilePath()));
-                lastClickedTable.updateTable(Paths.get(lastClickedTable.getCurrentPath()));
-            } catch (IOException e) {
-                LOGGER.warn(e.getMessage());
+        try {
+            if (!confDelete(lastClickedTable.getSelectedItem().getFilePath())) {
+                return;
             }
-        } else if (lastClickedTable == rightPController) {
-            sendMsg(DELETE_FILE, lastClickedTable.getSelectedItem().getFilePath(), null);
+            if (lastClickedTable == leftPController) {
+                try {
+                    Files.deleteIfExists(Paths.get(lastClickedTable.getSelectedItem().getFilePath()));
+                    lastClickedTable.updateTable(Paths.get(lastClickedTable.getCurrentPath()));
+                } catch (IOException e) {
+                    LOGGER.warn(e.getMessage());
+                }
+            } else if (lastClickedTable == rightPController) {
+                sendMsg(DELETE_FILE, lastClickedTable.getSelectedItem().getFilePath(), null);
+            }
+        } catch (NullPointerException e) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Не выбран файл");
+            alert.setHeaderText("Для удаления нажмите лкм по нужному файлу");
+            alert.setContentText(null);
+            alert.showAndWait();
         }
+
     }
 
     private boolean confDelete(String path) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Delete File");
-        alert.setHeaderText("Удалить файл "+path.split("\\\\")[path.split("\\\\").length-1]+"?");
+        alert.setTitle("Delete file"+(lastClickedTable instanceof ClientPanelCtrl ? " in client": " in cloud"));
+        alert.setHeaderText("Удалить "+path.split("\\\\")[path.split("\\\\").length-1]+"?");
         alert.setContentText(path);
         Optional<ButtonType> option = alert.showAndWait();
         if (option.get() == ButtonType.OK) {
@@ -175,7 +182,16 @@ public class Controller implements Initializable {
     }
 
     public void createDirectory(ActionEvent actionEvent) {
-        lastClickedTable.createDirectory();
+        try {
+            lastClickedTable.createDirectory();
+        } catch (NullPointerException e) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Не распознана таблица");
+            alert.setHeaderText("Для создания папки нажмите лкм по нужной таблице");
+            alert.setContentText(null);
+            alert.showAndWait();
+        }
+
     }
 
     public void appendAuthText(String msg) {
