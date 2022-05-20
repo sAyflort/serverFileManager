@@ -61,9 +61,12 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                     controller.updateLeftTable();
                 }
                 case PART_FILE -> {
-                    currentPath += "\\"+ request.getFileInfo().getFileName();
-                    Files.write(Path.of(currentPath),
+                    String path = currentPath + "\\" + request.getFileInfo().getFileName();
+                    Files.write(Path.of(path),
                             request.getFileInfo().getFile(), StandardOpenOption.APPEND);
+                    if(!(Files.size(Path.of(path)) == request.getFileInfo().getSize())) {
+                        return;
+                    }
                     controller.updateLeftTable();
                 }
             }
