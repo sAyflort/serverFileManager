@@ -4,17 +4,17 @@
 <?import javafx.scene.layout.*?>
 
 <VBox  alignment="CENTER" spacing="5" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.filemanagerclient.PanelController">
+      fx:controller="ru.geekbrains.serverFileManager.ServerPanelCtrl">
     <HBox>
         <ComboBox fx:id="disksBox"/>
         <TextField fx:id="pathField" HBox.hgrow="ALWAYS" editable="false"/>
-        <Button onAction="#upperPath" text="Вверх"/>
+        <Button fx:id="upButton" text="Вверх" onAction="#upperPath"/>
     </HBox>
     <HBox>
-        <TextField HBox.hgrow="ALWAYS"/>
-        <Button text="Поиск"/>
+        <TextField HBox.hgrow="ALWAYS" fx:id="searchField" onAction="#search"/>
+        <Button text="Поиск" onAction="#search"/>
     </HBox>
-        <TableView fx:id="table" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS"/>
+    <TableView fx:id="table" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS"/>
     <properties>
         <ctrl><fx:reference source="controller"/></ctrl>
     </properties>
