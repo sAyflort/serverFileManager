@@ -6,6 +6,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,9 +62,12 @@ public class ClientPanelCtrl implements PanelController{
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        Image fileImage = new Image("C:\\Users\\sAyflort\\IdeaProjects\\serverFileManager\\filemanager-client\\src\\main\\resources\\file-icon.png");
+        Image folderImage = new Image("C:\\Users\\sAyflort\\IdeaProjects\\serverFileManager\\filemanager-client\\src\\main\\resources\\folder-icon.png");
+
         TableColumn<FileInfo, String> fileTypeColumn = new TableColumn<>("Тип");
-        fileTypeColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getType().getName()));
-        fileTypeColumn.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        fileTypeColumn.setCellValueFactory(param -> new SimpleObjectProperty(param.getValue().getType() == FileInfo.FileType.DIRECTORY ? new ImageView(folderImage) : new ImageView(fileImage)));
+        fileTypeColumn.setPrefWidth(32);
 
         fileNameColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getFileName()));
         fileNameColumn.prefWidthProperty().bind(table.widthProperty().multiply(0.60));
@@ -90,7 +95,7 @@ public class ClientPanelCtrl implements PanelController{
         });
 
         table.getColumns().addAll(fileTypeColumn, fileNameColumn, fileSizeColumn);
-        table.getSortOrder().add(fileTypeColumn);
+        table.getSortOrder().add(fileSizeColumn);
 
         disksBox.getItems().clear();
         for (Path p: FileSystems.getDefault().getRootDirectories()

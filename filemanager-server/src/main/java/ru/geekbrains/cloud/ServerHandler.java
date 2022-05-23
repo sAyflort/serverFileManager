@@ -4,10 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.commons.Commands;
-import ru.commons.FileInfo;
-import ru.commons.FilesListRequest;
-import ru.commons.SendFileRequest;
+import ru.commons.*;
 import ru.geekbrains.cloud.dataBaseService.BaseAuthService;
 
 import java.io.File;
@@ -17,6 +14,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import static ru.commons.Commands.*;
 
@@ -81,6 +80,9 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
                         String path = currentPath + "\\" + sendFileRequest.getFileInfo().getFileName();
                         Files.write(Path.of(path),
                                 sendFileRequest.getFileInfo().getFile(), StandardOpenOption.APPEND);
+                        if(!(Files.size(Path.of(path)) == sendFileRequest.getFileInfo().getSize())) {
+                           return;
+                        }
                     }
                     case GET_FILE -> {
                         if (!checkRootPath(sendFileRequest.getFileInfo().getFilePath()))
@@ -135,15 +137,21 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void sendFile(FileInfo msg, Commands command, ChannelHandlerContext ctx) {
-        LOGGER.info("Отправка файла");
+        LOGGER.info(command);
         if (command == SEND_FILE) {
-            List<FileInfo> listFiles = cutFile(msg);
-            ctx.channel().writeAndFlush(new SendFileRequest(SEND_FILE, null, null, null, listFiles.get(0)));
-            if(listFiles.size() > 1) {
-                for (int i = 1; i < listFiles.size(); i++) {
-                    ctx.channel().writeAndFlush(new SendFileRequest(PART_FILE, null, null, null, listFiles.get(i)));
+            AtomicBoolean isBeginFile = new AtomicBoolean(true);
+            Consumer<byte[]> filePartResponse = bytes -> {
+                SendFileRequest sendFileRequest;
+                if(isBeginFile.get()) {
+                    sendFileRequest = new SendFileRequest(SEND_FILE, null, null, null, new FileInfo(msg, bytes));
+                    isBeginFile.set(false);
+                } else {
+                    sendFileRequest = new SendFileRequest(PART_FILE, null, null, null, new FileInfo(msg, bytes));
                 }
-            }
+                ctx.writeAndFlush(sendFileRequest);
+            };
+            FileSplit fileSplit = new FileSplit();
+            fileSplit.split(Paths.get(msg.getFilePath()), filePartResponse);
         }
     }
 
